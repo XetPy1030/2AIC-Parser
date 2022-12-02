@@ -1,0 +1,6 @@
+lxml
+aiogram
+pillow
+pandas
+requests
+openpyxl
