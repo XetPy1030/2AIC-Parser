@@ -2,6 +2,8 @@ import requests
 import pandas as pd
 from datetime import date, timedelta, datetime
 import pickle
+import parsers_aic
+import utils_aic
 
 table_id = "1_09XtP9nsQpAnL_tRvQ83HVhvLf7rh3jqyDvVSiRNto"
 table_url = 'https://docs.google.com/spreadsheets/d/'+table_id+'/export?format=xlsx'
@@ -19,40 +21,14 @@ def parse_table(filename: str = table_filename):
     return sheet
 
 
-def get_day_objs(sheet: list[list], parser: str['standart', 'saturday'] = 'standart'):
-    objs = {}
-    for x in range(len(sheet[0])//2):
-        cur_x = x*2+1
-        name_obj = sheet[0][cur_x]
-        objs[name_obj] = objs.get(name_obj, [])
-        for y in range((len(sheet)-2)//2):
-            cur_y = y*2 + 2
-            obj_time = sheet[cur_y][0]
-            obj_name = sheet[cur_y][cur_x]
-            obj_cab = sheet[cur_y][cur_x+1]
-            obj_teacher = sheet[cur_y+1][cur_x]
-            
-            if isinstance(obj_time, float):
-                continue
+parsers = {
+    'standart': parsers_aic.standart_parser,
+    'saturday': parsers_aic.saturday_parser
+}
 
 
-            start_time, end_time = obj_time.split('-')
-            start_hour, start_min = map(int, start_time.split(':'))
-            end_hour, end_min = map(int, end_time.split(':'))
-            
-            data = {
-                'name': obj_name,
-                'cabinet': obj_cab,
-                'teacher': obj_teacher,
-                'start_hour': start_hour,
-                'start_min': start_min,
-                'end_hour': end_hour,
-                'end_min': end_min,
-            }
-
-            objs[name_obj].append(data)
-
-    return objs
+def get_day_objs(sheet: list[list], parser = 'standart'):
+    return parsers[parser](sheet)
                 
 
 
@@ -76,6 +52,7 @@ def get_day_diary_from_time(sheet, date_parse: date):
         elif set_item >= date_parse_future:
             parsed_table.pop(-1)
             is_table = False
+            break
 
         if is_table:
             parsed_table.append(item)
@@ -88,6 +65,8 @@ def run_test():
     sheet = parse_table()
     diary = get_day_diary_from_time(sheet, date.today())
     
+    # print(len(diary))
+    
     with open('list.pickle', 'wb') as f:
         pickle.dump(diary, f)
 
@@ -98,4 +77,6 @@ with open('list.pickle', 'rb') as f:
     objs = pickle.load(f)
     # print(objs)
     ref = get_day_objs(objs)['Веб-дизайн и разработка 1 (гр.215-8-1)']
-    print(ref)
+    print(*ref, sep='\n')
+    print(utils_aic.get_now_par(ref))
+    print(utils_aic.get_next_par(ref))
