@@ -19,7 +19,6 @@ def download(self) -> str:
 class Diary:
     api_key = "1_09XtP9nsQpAnL_tRvQ83HVhvLf7rh3jqyDvVSiRNto"
     url = 'https://docs.google.com/spreadsheets/d/'+api_key+'/export?format=xlsx'
-    last_update: datetime
     sheet: DataFrame
     diary: list
     is_start = False
@@ -45,7 +44,6 @@ class Diary:
             time.sleep(600)
 
     def download(self) -> str:
-        self.last_update = datetime.now()
         myfile = requests.get(self.url)
         filename = "work_table.xlsx"
         open(filename, 'wb').write(myfile.content)
@@ -93,19 +91,10 @@ class Diary:
         return text
 
     def get_diary(self, dt: datetime, object: str) -> str:
-        self.update()
-
         diary = self.get_day_diary_from_time(date_parse=dt)
         diary_by_object = self.get_diary_by_object(diary=diary, object=object)
         return self.format_diary(diary=diary_by_object)
 
     def get_objects(self, dt: datetime, sep=", ") -> str:
-        self.update()
-        
         diary = self.get_day_diary_from_time(date_parse=dt)
         return [i if str(i)!="nan" else '' for i in diary[0]]
-
-    def update(self):
-        return
-        if (datetime.now()-self.last_update)>timedelta(hours=1):
-            self.download()
