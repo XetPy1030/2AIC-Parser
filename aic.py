@@ -29,13 +29,20 @@ class Aic:
 
     def thread_download(_, self):
         while True:
-            self.download()
-            new_size = os.path.getsize(table_filename)
-            if new_size != self.old_size or self.old_date != date.today():
-                self.old_size = new_size
-                self.old_date = date.today()
-                self.parse_table()
-                print('Обновлено')
+            try:
+                # self.download()
+
+                new_size = os.path.getsize(table_filename)
+                if new_size != self.old_size or self.old_date != date.today():
+                    self.old_size = new_size
+                    self.old_date = date.today()
+
+                    self.parse_table()
+
+                    print('Обновлено')
+            except Exception as ex:
+                print(ex)
+
             time.sleep(600)
 
     def download(self, filename=table_filename) -> str:
@@ -47,8 +54,14 @@ class Aic:
 
     def parse_table(self, filename: str = table_filename):
         self.sheet = pd.ExcelFile(filename).parse('курс 1')
-        self.schedule_today = self.get_day_diary_from_time(date.today())
-        self.schedule_tomorrow = self.get_day_diary_from_time(date.today()+timedelta(days=1))
+        try:
+            self.schedule_today = self.get_day_diary_from_time(date.today())
+        except:
+            pass
+        try:
+            self.schedule_tomorrow = self.get_day_diary_from_time(date.today()+timedelta(days=1))
+        except:
+            pass
         return self.sheet
 
     def get_day_objs(self, dt: date = None, parser: str = None):
@@ -62,12 +75,17 @@ class Aic:
         tomorrow = today+timedelta(days=1)
         if dt == today:
             diary = self.schedule_today
-        elif dt == tomorrow:
+        if dt == tomorrow:
             diary = self.schedule_tomorrow
-        elif diary is None:
+        if diary is None:
             diary = self.get_day_diary_from_time(dt)
 
-        return self.parsers[parser](diary)
+        try:
+            objs = self.parsers[parser](diary)
+        except Exception as ex:
+            objs = {}
+
+        return objs
 
     def get_day_diary_from_time(self, date_parse: date):
         date_parse_future = date_parse + timedelta(days=1)
@@ -87,7 +105,7 @@ class Aic:
                 is_table = True
                 parsed_table.append(self.sheet.iloc[number-1])
             elif set_item >= date_parse_future:
-                parsed_table.pop(-1)
+                parsed_table.pop(-1) if len(parsed_table) else 0
                 is_table = False
                 break
 
@@ -97,7 +115,7 @@ class Aic:
         return [[o for o in i] for i in parsed_table]
 
     def get_allowed_objects(self, dt: date):
-        diary = self.get_day_objs()
+        diary = self.get_day_objs(dt)
         return [i for i in diary.keys()]
     
     def get_diary(self, dt: date, object: str):
@@ -123,6 +141,6 @@ class Aic:
                 f"{i['start_hour']}:{i['start_min']}-{i['end_hour']}:{i['end_min']}"
             ]
             text += '\n'.join(list_text)
-            text += '\n'
-        return text
+            text += '\n\n'
+        return text if text.strip() else 'Нет расписания\n\n\n'
         
