@@ -30,7 +30,7 @@ class Aic:
     def thread_download(_, self):
         while True:
             try:
-                # self.download()
+                self.download()
 
                 new_size = os.path.getsize(table_filename)
                 if new_size != self.old_size or self.old_date != date.today():
