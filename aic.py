@@ -51,15 +51,22 @@ class Aic:
         self.schedule_tomorrow = self.get_day_diary_from_time(date.today()+timedelta(days=1))
         return self.sheet
 
-    def get_day_objs(self, dt: date = None, parser = 'standart'):
+    def get_day_objs(self, dt: date = None, parser: str = None):
         dt = date.today() if dt is None else dt
+
+        get_parser = lambda dt: 'saturday' if dt.weekday() == 5 else 'standart'
+        parser = parser if parser is not None else get_parser(dt)
+
         diary = None
-        if dt == dt.today():
+        today = dt.today()
+        tomorrow = today+timedelta(days=1)
+        if dt == today:
             diary = self.schedule_today
-        if dt == dt.today()+timedelta(days=1):
+        elif dt == tomorrow:
             diary = self.schedule_tomorrow
-        if diary is None:
+        elif diary is None:
             diary = self.get_day_diary_from_time(dt)
+
         return self.parsers[parser](diary)
 
     def get_day_diary_from_time(self, date_parse: date):
