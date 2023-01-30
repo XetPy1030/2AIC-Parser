@@ -1,14 +1,13 @@
 import requests
 import pandas as pd
 from datetime import date, timedelta, datetime
-import pickle
 import parsers_aic
 import threading
 import utils_aic
 import time
 import os
 
-table_id = "1_09XtP9nsQpAnL_tRvQ83HVhvLf7rh3jqyDvVSiRNto"
+table_id = "1D99MboTXsUsLGOW8Sy3RQ3mmQUhEE-O6POi8sPI2pow"
 table_url = 'https://docs.google.com/spreadsheets/d/'+table_id+'/export?format=xlsx'
 table_filename = 'table.xlsx'
 
@@ -30,7 +29,7 @@ class Aic:
     def thread_download(_, self):
         while True:
             try:
-                # self.download()
+                self.download()
 
                 new_size = os.path.getsize(table_filename)
                 if new_size != self.old_size or self.old_date != date.today():

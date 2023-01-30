@@ -14,6 +14,7 @@ from PIL import Image, ImageDraw, ImageFont
 from aiogram.types.bot_command import BotCommand
 from aiogram.types.inline_keyboard import InlineKeyboardMarkup, InlineKeyboardButton
 import aic
+import bus
 
 API_TOKEN = '5759610727:AAEC8h7ChVMqb5_S9Nr3BftqoMxdkGFwzHM'
 
@@ -24,18 +25,32 @@ bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot)
 
 diary = aic.Aic()
+diary_bus = bus.AicBus()
 
 
 def to_img(text: str):
     height = len(text.split('\n'))//4
     im = Image.new('RGB', (500, height*60), color=('#FAACAC'))
-    # Создаем объект со шрифтом
     font = ImageFont.truetype('Anonymous_Pro.ttf', size=12, encoding='UTF-8')
     draw_text = ImageDraw.Draw(im)
     draw_text.text(
         (10, 10),
         text,
-        # Добавляем шрифт к изображению
+        font=font,
+        fill='#1C0606')
+    filename = f'./imgs/{str(uuid4())}.png'
+    im.save(filename, 'PNG')
+    return filename
+
+
+def to_img_bus(text: str):
+    height = len(text.split('\n'))//4
+    im = Image.new('RGB', (600, 80+height*60), color=('#FAACAC'))
+    font = ImageFont.truetype('Anonymous_Pro.ttf', size=12, encoding='UTF-8')
+    draw_text = ImageDraw.Draw(im)
+    draw_text.text(
+        (10, 10),
+        text,
         font=font,
         fill='#1C0606')
     filename = f'./imgs/{str(uuid4())}.png'
@@ -62,6 +77,31 @@ marks_menu.insert(InlineKeyboardButton('завтра', callback_data='par_show_t
 @dp.message_handler(commands=['par'])
 async def send_welcome(message: types.Message):
     await message.reply('пары', reply_markup=marks_menu)
+
+
+@dp.message_handler(commands=['buses'])
+async def send_welcome(message: types.Message):
+    markup = types.InlineKeyboardMarkup(row_width=1)
+    for i in diary_bus.get_available_names():
+        markup.add(types.InlineKeyboardButton(
+            i,
+            callback_data=f'bus:{i}'
+        ))
+    await message.reply('Автобусы', reply_markup=markup)
+
+
+@dp.callback_query_handler(lambda c: c.data and c.data.startswith('bus'))
+async def awdwad(callback_query: types.CallbackQuery):
+    name = callback_query.data.split(':')[1]
+    schedule = diary_bus.get_schedule_from_name_day(name)
+    tables = [f'{i}\n{schedule[i][1][0]}\n{diary_bus.schedule_bus_to_table(schedule[i])}' for i in schedule.keys()]
+    
+    for i in tables:
+        text = i if i else 'Нет расписания'
+        fi = to_img_bus(text)
+        await callback_query.message.answer_photo(open(fi, 'rb'))
+        os.remove(fi)
+        # await callback_query.message.answer(i)
 
 
 async def send_schedule(dt, message: types.Message, object):
@@ -129,7 +169,7 @@ async def send_welcome(message: types.Message):
 
 @dp.message_handler(commands=['db'])
 async def send_welcome(message: types.Message):
-    print(db.users)
+    await message.answer(db.users)
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
