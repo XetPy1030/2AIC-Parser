@@ -1,6 +1,9 @@
 lxml
-aiogram
-pillow
-pandas
-requests
+aiogram~=2.25.1
+pillow~=9.4.0
+pandas~=1.5.3
+requests~=2.28.2
 openpyxl
+fastapi~=0.92.0
+uvicorn~=0.20.0
+prettytable~=3.6.0

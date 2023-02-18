@@ -1,22 +1,19 @@
 
 import logging
-from time import time
 
 from aiogram import Bot, Dispatcher, executor, types
 
 from uuid import uuid4
 import os
-# import table
 import db
 from datetime import datetime, timedelta
 import difflib
 from PIL import Image, ImageDraw, ImageFont
-from aiogram.types.bot_command import BotCommand
 from aiogram.types.inline_keyboard import InlineKeyboardMarkup, InlineKeyboardButton
 import aic
 import bus
 
-API_TOKEN = '5759610727:AAEC8h7ChVMqb5_S9Nr3BftqoMxdkGFwzHM'
+from config import API_TOKEN
 
 logging.basicConfig(level=logging.INFO)
 
@@ -170,6 +167,12 @@ async def send_welcome(message: types.Message):
 @dp.message_handler(commands=['db'])
 async def send_welcome(message: types.Message):
     await message.answer(db.users)
+
+
+@dp.message_handler(commands=['num'])
+async def send_welcome(message: types.Message):
+    await message.answer(f'Всего пользователей: {len(db.users)}')
+
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)

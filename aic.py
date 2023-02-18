@@ -11,6 +11,15 @@ table_id = "1D99MboTXsUsLGOW8Sy3RQ3mmQUhEE-O6POi8sPI2pow"
 table_url = 'https://docs.google.com/spreadsheets/d/'+table_id+'/export?format=xlsx'
 table_filename = 'table.xlsx'
 
+
+def download(filename=table_filename) -> str:
+    print('Скачивание...')
+    table = requests.get(table_url)
+    with open(filename, 'wb') as f:
+        f.write(table.content)
+    return filename
+
+
 class Aic:
     parsers = {
         'standart': parsers_aic.standart_parser,
@@ -29,7 +38,7 @@ class Aic:
     def thread_download(_, self):
         while True:
             try:
-                self.download()
+                download()
 
                 new_size = os.path.getsize(table_filename)
                 if new_size != self.old_size or self.old_date != date.today():
@@ -43,13 +52,6 @@ class Aic:
                 print(ex)
 
             time.sleep(600)
-
-    def download(self, filename=table_filename) -> str:
-        print('Скачивание...')
-        table = requests.get(table_url)
-        with open(filename, 'wb') as f:
-            f.write(table.content)
-        return filename
 
     def parse_table(self, filename: str = table_filename):
         self.sheet = pd.ExcelFile(filename).parse('курс 1')
@@ -113,12 +115,15 @@ class Aic:
 
         return [[o for o in i] for i in parsed_table]
 
-    def get_allowed_objects(self, dt: date):
+    def get_allowed_objects(self, dt: date) -> list[str]:
         diary = self.get_day_objs(dt)
         return [i for i in diary.keys()]
     
     def get_diary(self, dt: date, object: str):
-        return self.get_day_objs(dt)[object]
+        try:
+            return self.get_day_objs(dt)[object]
+        except KeyError:
+            return []
     
     def get_remain_diary(self, dt: datetime, object: str):
         diary = self.get_diary(dt.date(), object)
