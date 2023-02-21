@@ -31,10 +31,10 @@ def get_aic(dt: str, name: str):
     dt = datetime.strptime(dt, '%Y-%m-%d').date()
     objs = Aic.get_diary(dt, name)
 
-    return JSONResponse(content=json.dumps({
+    return JSONResponse(content={
         'text': reformat_to_text(objs),
         'error': False,
-    }, ensure_ascii=False))
+    })
 
 
 @app.get("/2aic/allowed")
@@ -42,10 +42,10 @@ def get_aic_allowed(dt: str):
     dt = datetime.strptime(dt, '%Y-%m-%d').date()
     objs = Aic.get_allowed_objects(dt)
 
-    return JSONResponse(content=json.dumps({
+    return JSONResponse(content={
         'text': objs,
         'error': False,
-    }, ensure_ascii=False))
+    })
 
 
 if __name__ == "__main__":
