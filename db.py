@@ -1,10 +1,10 @@
 import json
 
-with open('db.json', 'rb') as f:
+with open('media/db.json', 'rb') as f:
     users = json.load(f)
 
 def save():
-    file = open('db.json', 'w')
+    file = open('media/db.json', 'w')
     file.write(json.dumps(users))
     file.close()
 

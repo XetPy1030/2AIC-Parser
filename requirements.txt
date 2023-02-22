@@ -7,3 +7,4 @@ openpyxl
 fastapi~=0.92.0
 uvicorn~=0.20.0
 prettytable~=3.6.0
+coverage~=7.1.0

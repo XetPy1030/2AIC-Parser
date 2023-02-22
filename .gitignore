@@ -1,2 +1,7 @@
 .idea
 config.py
+venv
+media/Anonymous_Pro.ttf
+media/db.json
+media/table.xlsx
+media/table_bus.xlsx

@@ -1,11 +1,8 @@
-import time
-
-import aic
+from core import aic
 
 import fastapi
 from fastapi.responses import JSONResponse
-import json
-from datetime import date, datetime
+from datetime import datetime
 
 app = fastapi.FastAPI()
 

@@ -10,8 +10,7 @@ from datetime import datetime, timedelta
 import difflib
 from PIL import Image, ImageDraw, ImageFont
 from aiogram.types.inline_keyboard import InlineKeyboardMarkup, InlineKeyboardButton
-import aic
-import bus
+from core import aic, bus
 
 from config import API_TOKEN
 

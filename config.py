@@ -1,1 +1,5 @@
-API_TOKEN = '5759610727:AAEC8h7ChVMqb5_S9Nr3BftqoMxdkGFwzHM'
+# use dotenv to load environment variables from .env
+from dotenv import load_dotenv
+load_dotenv()
+
+TOKEN = os.getenv('TOKEN')

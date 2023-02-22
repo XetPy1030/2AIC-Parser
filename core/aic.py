@@ -3,21 +3,16 @@ import pandas as pd
 from datetime import date, timedelta, datetime
 import parsers_aic
 import threading
-import utils_aic
+from utils import utils_aic
 import time
 import os
 
 table_id = "1D99MboTXsUsLGOW8Sy3RQ3mmQUhEE-O6POi8sPI2pow"
 table_url = 'https://docs.google.com/spreadsheets/d/'+table_id+'/export?format=xlsx'
-table_filename = 'table.xlsx'
+table_filename = './media/table.xlsx'
 
 
-def download(filename=table_filename) -> str:
-    print('Скачивание...')
-    table = requests.get(table_url)
-    with open(filename, 'wb') as f:
-        f.write(table.content)
-    return filename
+
 
 
 class Aic:
@@ -30,10 +25,19 @@ class Aic:
     sheet = None
     schedule_today = None
     schedule_tomorrow = None
+
+    @staticmethod
+    def download(filename=table_filename) -> str:
+        print('Скачивание...')
+        table = requests.get(table_url)
+        with open(filename, 'wb') as f:
+            f.write(table.content)
+        return filename
     
-    def __init__(self) -> None:
-        x = threading.Thread(target=self.thread_download, args=(self,), daemon=True)
-        x.start()
+    def __init__(self, download_thread=False) -> None:
+        if download_thread:
+            x = threading.Thread(target=self.thread_download, args=(self,), daemon=True)
+            x.start()
 
     def thread_download(_, self):
         while True:

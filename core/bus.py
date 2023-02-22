@@ -12,7 +12,7 @@ import time
 
 table_id = "1zhkVzJlkZpEgMpXKWLyMYno-FxSMbIbd"
 table_url = 'https://docs.google.com/spreadsheets/d/'+table_id+'/export?format=xlsx'
-table_filename = 'table_bus.xlsx'
+table_filename = '../media/table_bus.xlsx'
 
 
 class AicBus:
