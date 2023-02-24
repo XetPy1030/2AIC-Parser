@@ -3,11 +3,8 @@ FROM python:3.10-alpine
 # Копируем все файлы из текущей директории в /app контейнера
 COPY ./ /app
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends gcc and-build-dependencies \
-    && rm -rf /var/lib/apt/lists/* \
-    && pip install cryptography \
-    && apt-get purge -y --auto-remove gcc and-build-dependencies
+RUN apk add --no-cache gcc musl-dev libffi-dev openssl-dev
+
 
 # Устанавливаем все зависимости
 RUN apk update && pip install -r /app/requirements.txt --no-cache-dir
