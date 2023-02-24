@@ -29,8 +29,8 @@ jobs:
     needs: [run_tests]
     runs-on: [ubuntu-latest]
     env:
-      LOGIN: ${{ secrets.DOCKER_LOGIN }}
-      NAME: ${{ secrets.DOCKER_NAME }}
+      LOGIN: ${{ env.DOCKER_LOGIN }}
+      NAME: ${{ env.DOCKER_NAME }}
     steps:
       - name: Variables
         # Выводим переменные окружения
