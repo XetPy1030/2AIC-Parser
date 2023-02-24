@@ -2,6 +2,13 @@
 FROM python:3.10-alpine
 # Копируем все файлы из текущей директории в /app контейнера
 COPY ./ /app
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends gcc and-build-dependencies \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install cryptography \
+    && apt-get purge -y --auto-remove gcc and-build-dependencies
+
 # Устанавливаем все зависимости
 RUN apk update && pip install -r /app/requirements.txt --no-cache-dir
 # Устанавливаем приложение (Подробнее смотри Distutils)
