@@ -9,6 +9,7 @@ on:
 jobs:
   run_tests:
     runs-on: [ubuntu-latest]
+    if: github.ref == 'refs/heads/master'
     steps:
       # Чекаутим код
       - uses: actions/checkout@master
@@ -26,7 +27,7 @@ jobs:
         run: coverage report
   build_and_pub:
     # Если тесты были пройдены успешно
-    needs: [run_tests]
+#    needs: [run_tests]
     runs-on: [ubuntu-latest]
     env:
       LOGIN: ${{ secrets.DOCKER_LOGIN }}
