@@ -1,12 +1,15 @@
-# syntax=docker/dockerfile:1
+# Берем нужный базовый образ
+FROM python:3.10-alpine
+# Копируем все файлы из текущей директории в /app контейнера
+COPY ./ /app
+# Устанавливаем все зависимости
+RUN apk update && pip install -r /app/requirements.txt --no-cache-dir
+# Устанавливаем приложение (Подробнее смотри Distutils)
+RUN pip install -e /app
+# Говорим контейнеру какой порт слушай
+#EXPOSE 8080
+# Запуск нашего приложения при старте контейнера
+CMD python /app/bot.py
 
-FROM python:3.11
-
-WORKDIR /app
-
-COPY requirements.txt requirements.txt
-RUN pip3 install -r requirements.txt
-
-COPY . .
-
-CMD ["python3", "bot.py"]
+# В качестве альтернативы distutils можно просто указать что выполнить
+#CMD python /app/src/app.py
