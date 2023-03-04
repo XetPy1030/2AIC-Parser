@@ -98,7 +98,7 @@ class AicBus:
 
         return schedule
 
-    def get_schedule(self, f_schedule: list[dict]) -> list[dict]:
+    def get_schedule(self, f_schedule: list[dict]) -> dict:
         official_buses = []
         not_official_buses = []
         wrong_buses = []
@@ -196,8 +196,6 @@ class AicBus:
 
                 bus_schedule_number += 1
 
-            pprint(routes_list)
-
             # обработать routes_list в official_buses, not_official_buses, wrong_buses
             for route in routes_list:
                 if route['is_official']:
@@ -216,7 +214,11 @@ class AicBus:
 
             # TODO, имена автобусов могут быть одинаковыми, добавить маршрут, если 2 автобуса с одинаковым именем
 
-        return f_schedule
+        return {
+            'official_buses': official_buses,
+            'not_official_buses': not_official_buses,
+            'wrong_buses': wrong_buses
+        }
 
     @staticmethod
     def schedule_bus_to_table(schedule_bus: list[list]):
