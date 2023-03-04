@@ -1,6 +1,6 @@
 import os
 import time
-from datetime import date
+from datetime import date, datetime
 
 import requests
 
@@ -32,3 +32,11 @@ def thread_download(bus):
             print(ex)
 
         time.sleep(600)
+
+
+def check_time_format(text: str, format_time: str) -> bool:
+    try:
+        datetime.strptime(text, format_time)
+        return True
+    except ValueError:
+        return False
