@@ -2,8 +2,6 @@ from pprint import pprint
 
 import pandas as pd
 from datetime import date, datetime, timedelta
-from prettytable import PrettyTable as pt
-import textwrap
 import threading
 
 from bus_utils.config import table_filename
@@ -59,7 +57,7 @@ class AicBus:
             item = table_rows[item_number]
             if isinstance(item[0], str) and item[0].startswith('Автобус'):
                 schedule.append({
-                    'name': item[0],
+                    'name': item[0].removeprefix('Автобус').replace('№', '').strip(),
                     'route': table_rows[item_number + 1][0],
                     'schedule': []
                 })
@@ -77,12 +75,12 @@ class AicBus:
                 if len(item) > 4:
                     optional = {
                         'quantity': int(item[3]),
-                        'comments': item[4]
+                        'comments': item[4].strip() if item[4] is not None else None
                     }
                 else:
                     optional = {
                         'quantity': None,
-                        'comments': item[3]
+                        'comments': item[3].strip() if item[3] is not None else None
                     }
 
                 schedule[-1]['schedule'].append({
@@ -124,9 +122,11 @@ class AicBus:
                     routes_list.append({
                         'name_bus': name_bus,
                         'start_time': start_time,
+                        'start_time_the_beginning_of_the_beginning': None,
                         'end_time': end_time,
                         'groups': groups,
                         'start_place': start_place,
+                        'start_place_the_beginning_of_the_beginning': None,
                         'end_place': end_place,
                         'comments': comments,
                         'quantity': quantity,
@@ -185,9 +185,11 @@ class AicBus:
                     routes_list.append({
                         'name_bus': name_bus,
                         'start_time': start_time,
+                        'start_time_the_beginning_of_the_beginning': None,
                         'end_time': end_time,
                         'groups': groups,
                         'start_place': start_place,
+                        'start_place_the_beginning_of_the_beginning': None,
                         'end_place': end_place,
                         'comments': comments,
                         'quantity': quantity,
@@ -201,7 +203,7 @@ class AicBus:
                     route['start_time'] = datetime.combine(date.today(), route['start_time'])
                 if route['end_time'] is not None:
                     route['end_time'] = datetime.combine(date.today(), route['end_time'])
-                if 'start_time_the_beginning_of_the_beginning' in route:
+                if route['start_time_the_beginning_of_the_beginning'] is not None:
                     route['start_time_the_beginning_of_the_beginning'] = datetime.combine(
                         date.today(),
                         route['start_time_the_beginning_of_the_beginning']
@@ -223,6 +225,14 @@ class AicBus:
                     else:
                         not_official_buses.append(route)
 
+            for route in routes_list:
+                if route['start_time'] is not None:
+                    route['start_time'] = route['start_time'].time()
+                if route['end_time'] is not None:
+                    route['end_time'] = route['end_time'].time()
+                if route['start_time_the_beginning_of_the_beginning'] is not None:
+                    route['start_time_the_beginning_of_the_beginning'] = route['start_time_the_beginning_of_the_beginning'].time()
+
             # TODO, имена автобусов могут быть одинаковыми, добавить маршрут, если 2 автобуса с одинаковым именем
 
         return Schedule(official_buses, not_official_buses, wrong_buses)
@@ -236,3 +246,4 @@ if __name__ == '__main__':
     file_schedule = bus.get_file_schedule(available_days[0])
     # pprint(file_schedule)
     schedule = bus.get_schedule(file_schedule)
+    pprint(schedule.get_buses())
