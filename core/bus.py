@@ -8,7 +8,7 @@ import threading
 
 from bus_utils.config import table_filename
 from bus_utils.utils_bus import download_bus, thread_download, check_time_format
-
+from bus_utils.schedule import Schedule
 
 class AicBus:
     sheet = None
@@ -98,7 +98,7 @@ class AicBus:
 
         return schedule
 
-    def get_schedule(self, f_schedule: list[dict]) -> dict:
+    def get_schedule(self, f_schedule: list[dict]) -> Schedule:
         official_buses = []
         not_official_buses = []
         wrong_buses = []
@@ -196,6 +196,17 @@ class AicBus:
 
                 bus_schedule_number += 1
 
+            for route in routes_list:
+                if route['start_time'] is not None:
+                    route['start_time'] = datetime.combine(date.today(), route['start_time'])
+                if route['end_time'] is not None:
+                    route['end_time'] = datetime.combine(date.today(), route['end_time'])
+                if 'start_time_the_beginning_of_the_beginning' in route:
+                    route['start_time_the_beginning_of_the_beginning'] = datetime.combine(
+                        date.today(),
+                        route['start_time_the_beginning_of_the_beginning']
+                    )
+
             # обработать routes_list в official_buses, not_official_buses, wrong_buses
             for route in routes_list:
                 if route['is_official']:
@@ -214,25 +225,7 @@ class AicBus:
 
             # TODO, имена автобусов могут быть одинаковыми, добавить маршрут, если 2 автобуса с одинаковым именем
 
-        return {
-            'official_buses': official_buses,
-            'not_official_buses': not_official_buses,
-            'wrong_buses': wrong_buses
-        }
-
-    @staticmethod
-    def schedule_bus_to_table(schedule_bus: list[list]):
-        table = pt()
-        columns = schedule_bus[2]
-
-        for column in columns:
-            table.add_column(column, [])
-
-        for row in schedule_bus[3:]:
-            row = [textwrap.fill(item, 30) for item in row]
-            table.add_row(row)
-
-        return table
+        return Schedule(official_buses, not_official_buses, wrong_buses)
 
 
 if __name__ == '__main__':
@@ -243,4 +236,3 @@ if __name__ == '__main__':
     file_schedule = bus.get_file_schedule(available_days[0])
     # pprint(file_schedule)
     schedule = bus.get_schedule(file_schedule)
-    # pprint(schedule)
