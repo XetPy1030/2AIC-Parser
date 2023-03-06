@@ -27,3 +27,7 @@ class Schedule:
             buses += self.wrong_buses
         buses.sort(key=lambda x: x['start_time'] if x['start_time'] else x['start_time_the_beginning_of_the_beginning'])
         return buses
+
+    @property
+    def buses(self):
+        return self.get_buses()
