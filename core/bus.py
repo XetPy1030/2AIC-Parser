@@ -4,6 +4,7 @@ import pandas as pd
 from datetime import date, datetime, timedelta
 import threading
 from uuid import uuid4, UUID
+import re
 
 from bus_utils.config import table_filename
 from bus_utils.utils_bus import download_bus, thread_download, check_time_format
@@ -32,7 +33,7 @@ class AicBus:
 
     @property
     def available_days(self) -> list[str]:
-        date_now = date.today()-timedelta(days=2)
+        date_now = date.today()-timedelta(days=4)  # TODO: щелчок Таноса потом
         allowed_names = []
 
         for name in self.sheet.sheet_names:
@@ -106,13 +107,7 @@ class AicBus:
                 route['start_time'] = datetime.combine(date.today(), route['start_time'])
             if route['end_time'] is not None:
                 route['end_time'] = datetime.combine(date.today(), route['end_time'])
-            if route['start_time_the_beginning_of_the_beginning'] is not None:
-                route['start_time_the_beginning_of_the_beginning'] = datetime.combine(
-                    date.today(),
-                    route['start_time_the_beginning_of_the_beginning']
-                )
 
-        # обработать routes_list в official_buses, not_official_buses, wrong_buses
         for route in routes_list:
             if route['is_official']:
                 if route['end_time'] is None:
@@ -123,20 +118,18 @@ class AicBus:
                     else:
                         official_buses.append(route)
             else:
-                if route['end_time'] - route['start_time_the_beginning_of_the_beginning'] > timedelta(hours=1):
+                next_route = self.get_route(routes_list, route['next_route'])
+
+                if route['end_time'] - next_route['start_time'] > timedelta(hours=1):
                     wrong_buses.append(route)
                 else:
                     not_official_buses.append(route)
 
-        # преобразовать время в datetime.time, чтобы не было проблем с сравнением и лишних данных
         for route in routes_list:
             if route['start_time'] is not None:
                 route['start_time'] = route['start_time'].time()
             if route['end_time'] is not None:
                 route['end_time'] = route['end_time'].time()
-            if route['start_time_the_beginning_of_the_beginning'] is not None:
-                route['start_time_the_beginning_of_the_beginning'] = route[
-                    'start_time_the_beginning_of_the_beginning'].time()
 
     def patch_for_identical(self, routes_list: list[dict]) -> None:
         for route in routes_list:
@@ -159,6 +152,75 @@ class AicBus:
             if route['this_route'] == uuid:
                 return route
 
+    def path_divide_hostels(self, routes_list: list[dict]):
+        route_num = 0
+        while route_num < len(routes_list):
+            route = routes_list[route_num]
+
+            re_hostel = re.compile(r'Хостел \d-\d')
+
+            if re_hostel.match(route['start_place']):
+                hostel_num_1 = re_hostel.match(route['start_place']).group(0)[7]
+                hostel_num_2 = re_hostel.match(route['start_place']).group(0)[9]
+                next_next_route = self.get_route(routes_list, route['next_route'])
+
+                next_route_add = {
+                    'name_bus': route['name_bus'],
+                    'start_time': None,
+                    'end_time': route['end_time'],
+                    'start_place': 'Хостел ' + hostel_num_2,
+                    'end_place': route['end_place'],
+                    'groups': route['groups'],
+                    'is_official': route['is_official'],
+                    'comments': route['comments'],
+                    'quantity': route['quantity'],
+                    'this_route': uuid4(),
+                    'next_route': route['next_route'],
+                    'previous_route': route['this_route']
+                }
+
+                next_next_route['previous_route'] = next_route_add['this_route']
+
+                route['start_place'] = 'Хостел ' + hostel_num_1
+                route['end_place'] = 'Хостел ' + hostel_num_2
+                route['end_time'] = None
+                route['next_route'] = next_route_add['this_route']
+
+                routes_list.insert(route_num + 1, next_route_add)
+
+            if re_hostel.match(route['end_place']):
+                hostel_num_1 = re_hostel.match(route['end_place']).group(0)[7]
+                hostel_num_2 = re_hostel.match(route['end_place']).group(0)[9]
+                previous_previous_route = self.get_route(routes_list, route['previous_route'])
+
+                # TODO: ЧЕКНУТЬ ПРАВИЛЬНОСТЬ
+
+                previous_route_add = {
+                    'name_bus': route['name_bus'],
+                    'start_time': route['start_time'],
+                    'end_time': None,
+                    'start_place': route['start_place'],
+                    'end_place': 'Хостел ' + hostel_num_1,
+                    'groups': route['groups'],
+                    'is_official': route['is_official'],
+                    'comments': route['comments'],
+                    'quantity': route['quantity'],
+                    'this_route': uuid4(),
+                    'next_route': route['this_route'],
+                    'previous_route': route['previous_route']
+                }
+
+                previous_previous_route['next_route'] = previous_route_add['this_route']
+
+                route['start_place'] = 'Хостел ' + hostel_num_1
+                route['end_place'] = 'Хостел ' + hostel_num_2
+                route['start_time'] = None
+                route['previous_route'] = previous_route_add['this_route']
+
+                routes_list.insert(route_num, previous_route_add)
+
+            route_num += 1
+
     def get_schedule(self, f_schedule: list[BusesSchedules]) -> Schedule:
         official_buses = []
         not_official_buses = []
@@ -180,9 +242,7 @@ class AicBus:
                 all_official = {
                     'name_bus': bus_dict.name,
                     'start_time': bus_schedule.time,
-                    'start_time_the_beginning_of_the_beginning': None,
                     'groups': bus_schedule.groups,
-                    'start_place_the_beginning_of_the_beginning': None,
                     'comments': bus_schedule.comment,
                     'quantity': bus_schedule.quantity,
                     'is_official': True,
@@ -207,11 +267,9 @@ class AicBus:
                         routes_list.append({
                             **all_official,
                             'start_time': None,
-                            'start_time_the_beginning_of_the_beginning': bus_schedule.time,
                             'end_time': bus_dict.schedule[bus_schedule_number + 1].time,
                             'groups': None,
                             'start_place': places.split(' - ')[1].strip(),
-                            'start_place_the_beginning_of_the_beginning': places.split(' - ')[0].strip(),
                             'end_place': end_place,
                             'comments': None,
                             'quantity': None,
@@ -241,6 +299,8 @@ class AicBus:
             self.path_for_next_route(routes_list)
 
             self.patch_for_identical(routes_list)
+
+            self.path_divide_hostels(routes_list)
 
             self.bus_distribution(routes_list, official_buses, not_official_buses, wrong_buses)
 
