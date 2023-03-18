@@ -1,0 +1,76 @@
+{
+  "get": [
+    {
+      "name_bus": "Одинаково",
+      "start_time": "12:00",
+      "end_time": "12:10",
+      "start_place": "Хостел 1-2",
+      "end_place": "Политех",
+      "groups": "215",
+      "is_official": true,
+      "comments": "Пошел к фигам",
+      "quantity": "1",
+      "this_route": "2",
+      "next_route": "3",
+      "previous_route": "1"
+    },
+    {
+      "name_bus": "Одинаково",
+      "start_time": "12:10",
+      "end_time": "12:30",
+      "start_place": "Политех",
+      "end_place": "Грабин",
+      "groups": "215",
+      "is_official": true,
+      "comments": "Пошел к фигам",
+      "quantity": "1",
+      "this_route": "3",
+      "next_route": "4",
+      "previous_route": "2"
+    }
+  ],
+  "give": [
+    {
+      "name_bus": "Одинаково",
+      "start_time": "12:00",
+      "end_time": null,
+      "start_place": "Хостел 1",
+      "end_place": "Хостел 2",
+      "groups": "215",
+      "is_official": true,
+      "comments": "Пошел к фигам",
+      "quantity": "1",
+      "this_route": "2",
+      "next_route": "5",
+      "previous_route": "1"
+    },
+    {
+      "name_bus": "Одинаково",
+      "start_time": null,
+      "end_time": "12:10",
+      "start_place": "Хостел 2",
+      "end_place": "Политех",
+      "groups": "215",
+      "is_official": true,
+      "comments": "Пошел к фигам",
+      "quantity": "1",
+      "this_route": "5",
+      "next_route": "3",
+      "previous_route": "2"
+    },
+    {
+      "name_bus": "Одинаково",
+      "start_time": "12:10",
+      "end_time": "12:30",
+      "start_place": "Политех",
+      "end_place": "Грабин",
+      "groups": "215",
+      "is_official": true,
+      "comments": "Пошел к фигам",
+      "quantity": "1",
+      "this_route": "3",
+      "next_route": "4",
+      "previous_route": "5"
+    }
+  ]
+}
